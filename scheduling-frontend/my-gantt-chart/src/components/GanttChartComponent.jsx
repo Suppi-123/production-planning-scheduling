@@ -3,13 +3,16 @@ import axios from 'axios';
 import moment from 'moment';
 import { DataSet, Timeline } from 'vis-timeline/standalone';
 import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
+import * as XLSX from 'xlsx';
 
 // Function to generate colors
 const generateColor = (index) => {
   const colors = [
     '#FF5733', '#33FF57', '#00008b', '#FF33FF', '#FFFF33', 
     '#33FFFF', '#FF8C00', '#8B008B', '#FF6347', '#4682B4', 
-    '#6A5ACD', '#7FFF00', '#D2691E', '#DC143C', '#00FFFF'
+    '#6A5ACD', '#7FFF00', '#D2691E', '#DC143C', '#00FFFF',
+    '#FF1493', '#FFD700', '#32CD32', '#FF4500', '#DA70D6',
+    '#00FF7F', '#FFDAB9', '#FF6347', '#D2B48C', '#ADFF2F',
   ];
   return colors[index % colors.length];
 };
@@ -30,10 +33,12 @@ const GanttChart = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        //const response = await axios.get('http://192.168.10.21:4567/schedule/');
         const response = await axios.get('http://172.18.101.47:4567/schedule/');
+        //192.168.137.221
         setTasks(response.data);
 
-        const optionsResponse = await axios.get('http://172.18.101.47:4567/operations/');
+        const optionsResponse = await axios.get('http://172.18.101.47:4567/fetch_operations/');
         const uniqueComponents = [...new Set(optionsResponse.data.map(item => item.component))];
         const uniqueMachines = [...new Set(optionsResponse.data.map(item => item.machine))];
         const uniqueTypes = [...new Set(optionsResponse.data.map(item => item.type))];
@@ -51,6 +56,7 @@ const GanttChart = () => {
     };
     fetchData();
   }, []);
+
   useEffect(() => {
     if (tasks.length > 0 && timelineRef.current) {
       const container = timelineRef.current;
@@ -69,10 +75,15 @@ const GanttChart = () => {
           end: task.end_time,
           group: task.machine,
           className: task.component,
-          title: `<strong>Description:</strong> ${task.description}<br><strong>Start:</strong> ${moment(task.start_time).format('YYYY-MM-DD HH:mm:ss')}<br><strong>End:</strong> ${moment(task.end_time).format('YYYY-MM-DD HH:mm:ss')}`,
-          style: `background-color: ${colorMap[task.component] || '#ccc'};`
-        }))
-      );
+          title: `<strong>Component:</strong> ${task.component}<br>
+          <strong>Description:</strong> ${task.description}<br>
+          <strong>Machine:</strong> ${task.machine}<br>
+          <strong>Quantity:</strong> ${task.quantity}<br>
+          <strong>Start:</strong> ${moment(task.start_time).format('YYYY-MM-DD HH:mm:ss')}<br>
+          <strong>End:</strong> ${moment(task.end_time).format('YYYY-MM-DD HH:mm:ss')}`,
+  style: `background-color: ${colorMap[task.component] || '#ccc'};`
+}))
+);
   
       const groups = new DataSet(
         [...new Set(tasks.map(task => task.machine))].map(machine => ({
@@ -185,6 +196,27 @@ useEffect(() => {
   }
 }, [viewMode, tasks]);
  
+// Function to generate Excel file from data
+const handleGenerate = async () => {
+  try {
+    // Fetch data from backend
+    const response = await axios.get('http://172.18.101.47:4567/schedule/');
+    const data = response.data;
+
+    if (data && Array.isArray(data) && data.length > 0) {
+      // Convert JSON data to Excel sheet
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Gantt Data');
+      XLSX.writeFile(wb, 'gantt_data.xlsx');
+    } else {
+      alert('No data found to export.');
+    }
+  } catch (error) {
+    console.error('Error exporting data:', error);
+    alert('There was an issue exporting the data. Please try again.');
+  }
+};
 
   if (loading) return <div className="text-center">Loading...</div>;
   if (error) return <div className="text-center text-red-500">{error}</div>;
@@ -208,6 +240,12 @@ useEffect(() => {
           <option value="day">Day View</option>
           <option value="week">Week View</option>
         </select>
+        <button 
+      onClick={handleGenerate} 
+      className="px-4 py-2 bg-blue-500 text-white ml-2 rounded-lg"
+    >
+      Generate
+    </button>
       </div>
       <div ref={timelineRef} style={{ height: '600px' }}></div>
     </div>

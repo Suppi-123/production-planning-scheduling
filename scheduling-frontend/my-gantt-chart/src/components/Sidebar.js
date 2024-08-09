@@ -1,3 +1,4 @@
+// src/components/Sidebar.js
 import React, { useState } from 'react';
 
 const Sidebar = ({ setView }) => {
@@ -21,14 +22,6 @@ const Sidebar = ({ setView }) => {
           Gantt Chart
         </li>
         <li
-          onClick={() => handleItemClick('addTask')}
-          onMouseEnter={() => setHoveredItem('addTask')}
-          onMouseLeave={() => setHoveredItem(null)}
-          style={(hoveredItem === 'addTask' || selectedItem === 'addTask') ? { ...styles.navItem, ...styles.navItemHover } : styles.navItem}
-        >
-          Add Task
-        </li>
-        <li
           onClick={() => handleItemClick('scheduleDetails')}
           onMouseEnter={() => setHoveredItem('scheduleDetails')}
           onMouseLeave={() => setHoveredItem(null)}
@@ -43,6 +36,22 @@ const Sidebar = ({ setView }) => {
           style={(hoveredItem === 'dailyProduction' || selectedItem === 'dailyProduction') ? { ...styles.navItem, ...styles.navItemHover } : styles.navItem}
         >
           Daily Production
+        </li>
+        <li
+          onClick={() => handleItemClick('addTask')}
+          onMouseEnter={() => setHoveredItem('addTask')}
+          onMouseLeave={() => setHoveredItem(null)}
+          style={(hoveredItem === 'addTask' || selectedItem === 'addTask') ? { ...styles.navItem, ...styles.navItemHover } : styles.navItem}
+        >
+          Add Task
+        </li>
+        <li
+          onClick={() => handleItemClick('addQuantity')} // Add new menu item
+          onMouseEnter={() => setHoveredItem('addQuantity')}
+          onMouseLeave={() => setHoveredItem(null)}
+          style={(hoveredItem === 'addQuantity' || selectedItem === 'addQuantity') ? { ...styles.navItem, ...styles.navItemHover } : styles.navItem}
+        >
+          Add Quantity
         </li>
       </ul>
     </div>

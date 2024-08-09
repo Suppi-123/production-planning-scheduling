@@ -1,9 +1,12 @@
+// src/App.js
 import React, { useState } from 'react';
-import Header from '../src/components/Header'; // Adjust the path if needed
-import Sidebar from '../src/components/Sidebar';
-import GanttChart from '../src/components/GanttChartComponent';
-import AddTaskForm from '../src/components/AddTaskForm';
-import DailyProduction from '../src/components/DailyProduction'; // Import DailyProduction component
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import GanttChart from './components/GanttChartComponent';
+import AddTask from './components/AddTask';
+import DailyProduction from './components/DailyProduction';
+import ScheduleDetails from './components/ScheduleDetails';
+import AddQuantity from './components/AddQuantity'; // Import AddQuantity component
 
 const App = () => {
   const [view, setView] = useState('gantt');
@@ -13,11 +16,13 @@ const App = () => {
       case 'gantt':
         return <GanttChart />;
       case 'addTask':
-        return <AddTaskForm />;
+        return <AddTask />;
       case 'scheduleDetails':
-        return <div>Schedule Details</div>;
+        return <ScheduleDetails />;
       case 'dailyProduction':
         return <DailyProduction />;
+      case 'addQuantity': // Add case for AddQuantity
+        return <AddQuantity />;
       default:
         return <GanttChart />;
     }

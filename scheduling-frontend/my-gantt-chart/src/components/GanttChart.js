@@ -8,7 +8,7 @@ const GanttChart = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get('http://172.18.101.47:1234/schedule/')
+    axios.get('http://192.168.10.21:1234/schedule/')
       .then(response => {
         const fetchedData = response.data.map((item, index) => [
           `Task ${index + 1}`,     // Task ID

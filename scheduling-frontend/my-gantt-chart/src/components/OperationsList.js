@@ -12,7 +12,7 @@ const OperationsList = () => {
 
     const fetchOperations = async () => {
         try {
-            const response = await axios.get('http://172.18.101.47:1234/operations/');
+            const response = await axios.get('http://192.168.10.21:1234/operations/');
             console.log('Response:', response); // Log response details for inspection
             setOperations(response.data);
             setLoading(false);

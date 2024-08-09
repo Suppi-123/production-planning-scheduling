@@ -30,10 +30,10 @@ const GanttChart = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://172.18.101.47:4567/schedule/');
+        const response = await axios.get('http://192.168.10.21:4567/schedule/');
         setTasks(response.data);
 
-        const optionsResponse = await axios.get('http://172.18.101.47:4567/operations/');
+        const optionsResponse = await axios.get('http://192.168.10.21:4567/operations/');
         const uniqueComponents = [...new Set(optionsResponse.data.map(item => item.component))];
         const uniqueMachines = [...new Set(optionsResponse.data.map(item => item.machine))];
         const uniqueTypes = [...new Set(optionsResponse.data.map(item => item.type))];

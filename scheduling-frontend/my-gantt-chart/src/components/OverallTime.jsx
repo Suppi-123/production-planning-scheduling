@@ -11,7 +11,7 @@ const OverallTime = () => {
 
     const fetchOverallTime = async () => {
         try {
-            const response = await axios.get('http://172.18.101.47:1234/schedule/');
+            const response = await axios.get('http://192.168.10.21:1234/schedule/');
             setOverallTime(response.data.overall_time);
             setCompletionTime(response.data.overall_end_time);
         } catch (error) {
