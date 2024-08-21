@@ -16,8 +16,8 @@ const AddQuantity = () => {
       const response = await axios.get('http://172.18.101.47:4567/fetch_operations/');
       const data = response.data;
 
-      // Assuming data is an array of objects with component details
-      const componentList = data.map(item => item.component);
+      // Extract component names and remove duplicates using Set
+      const componentList = [...new Set(data.map(item => item.component))];
       setComponents(componentList);
       setFetchedQuantities(data);
     } catch (error) {

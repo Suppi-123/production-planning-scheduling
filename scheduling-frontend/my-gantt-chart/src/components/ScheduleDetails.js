@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import * as XLSX from 'xlsx';  // Import XLSX for Excel export
 import 'tailwindcss/tailwind.css';
 
 const ScheduleDetails = () => {
@@ -77,6 +78,13 @@ const ScheduleDetails = () => {
     return pageNumbers;
   };
 
+  const handleDownloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(scheduleData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Schedule Data');
+    XLSX.writeFile(workbook, 'schedule_data.xlsx');
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h2 className="text-xl font-bold mb-4">Schedule Details</h2>
@@ -108,6 +116,12 @@ const ScheduleDetails = () => {
           className="px-4 py-2 bg-blue-500 text-white rounded-md"
         >
           Submit
+        </button>
+        <button
+          onClick={handleDownloadExcel}
+          className="px-4 py-2 bg-green-500 text-white rounded-md"
+        >
+          Download Excel
         </button>
       </div>
       {isLoading && <p>Loading...</p>}
