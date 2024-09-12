@@ -1,4 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+// Function to generate a random color
+const getRandomColor = () => {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
 
 const DailyProduction = () => {
   const [data, setData] = useState(null);
@@ -24,59 +35,69 @@ const DailyProduction = () => {
       .catch((error) => console.error('Error fetching data:', error));
   }, []);
 
-  const renderBarChart = () => {
-    if (!data) {
-      return null;
-    }
+  const prepareChartData = () => {
+    if (!data) return [];
 
     const chartData = [];
     const allDates = new Set();
 
-    Object.keys(data.daily_production).forEach((component) => {
-      const componentData = data.daily_production[component];
-      Object.keys(componentData).forEach((date) => {
-        allDates.add(date);
-        chartData.push({
-          component,
-          date,
-          quantity: componentData[date],
-        });
-      });
+    Object.values(data.daily_production).forEach(componentData => {
+      Object.keys(componentData).forEach(date => allDates.add(date));
     });
 
     const sortedDates = Array.from(allDates).sort();
 
-    const groupedData = sortedDates.map((date) => {
-      const dateData = chartData.filter((d) => d.date === date);
-      return {
-        date,
-        components: dateData,
-      };
+    sortedDates.forEach(date => {
+      const dateData = { date };
+      Object.entries(data.daily_production).forEach(([component, componentData]) => {
+        if (componentData[date]) {
+          dateData[component] = componentData[date]; // Store individual component data
+        }
+      });
+      chartData.push(dateData);
     });
 
-    return (
-      <div className="flex flex-col items-center">
-        {groupedData.map(({ date, components }) => (
-          <div key={date} className="mb-4 w-full">
-            <div className="font-bold mb-2">{date}</div>
-            <div className="flex items-end h-52">
-              {components.map(({ component, quantity }) => (
-                <div
-                  key={component}
-                  className="flex-1 h-full mx-2 flex items-end justify-center text-white"
-                  style={{
-                    height: `${quantity * 10}px`,
-                    backgroundColor: `hsl(${(component.length * 50) % 360}, 70%, 50%)`,
-                  }}
-                  title={`Component: ${component}\nQuantity: ${quantity}`}
-                >
-                  {quantity}
-                </div>
-              ))}
+    return chartData;
+  };
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-4 border rounded shadow">
+          <p className="font-bold">{`Date: ${label}`}</p>
+          {payload.map((entry, index) => (
+            <div key={`item-${index}`} className="flex justify-between">
+              <span style={{ color: entry.color }}>{entry.name}:</span>
+              <span>{entry.value}</span>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const renderBarChart = () => {
+    const chartData = prepareChartData();
+    const componentKeys = data ? Object.keys(data.daily_production) : [];
+
+    return (
+      <ResponsiveContainer width="100%" height={400}>
+        <BarChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" />
+          <YAxis />
+          <Tooltip content={<CustomTooltip />} />
+          {componentKeys.map((component, index) => (
+            <Bar
+              key={component}
+              dataKey={component}
+              fill={getRandomColor()} // Assign a random color to each component
+              stackId="a"
+            />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
     );
   };
 

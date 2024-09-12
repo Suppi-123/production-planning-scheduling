@@ -7,6 +7,7 @@ import AddTask from './components/AddTask';
 import DailyProduction from './components/DailyProduction';
 import ScheduleDetails from './components/ScheduleDetails';
 import AddQuantity from './components/AddQuantity'; // Import AddQuantity component
+import LeadTime from './components/LeadTime'; // Import LeadTime component
 
 const App = () => {
   const [view, setView] = useState('gantt');
@@ -21,8 +22,10 @@ const App = () => {
         return <ScheduleDetails />;
       case 'dailyProduction':
         return <DailyProduction />;
-      case 'addQuantity': // Add case for AddQuantity
+      case 'addQuantity':
         return <AddQuantity />;
+      case 'leadTime': // Add case for LeadTime
+        return <LeadTime />;
       default:
         return <GanttChart />;
     }

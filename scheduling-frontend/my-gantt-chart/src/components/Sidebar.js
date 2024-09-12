@@ -53,6 +53,14 @@ const Sidebar = ({ setView }) => {
         >
           Add Quantity
         </li>
+        <li
+          onClick={() => handleItemClick('leadTime')} // Add new menu item for Lead Time
+          onMouseEnter={() => setHoveredItem('leadTime')}
+          onMouseLeave={() => setHoveredItem(null)}
+          style={(hoveredItem === 'leadTime' || selectedItem === 'leadTime') ? { ...styles.navItem, ...styles.navItemHover } : styles.navItem}
+        >
+          Lead Time
+        </li>
       </ul>
     </div>
   );

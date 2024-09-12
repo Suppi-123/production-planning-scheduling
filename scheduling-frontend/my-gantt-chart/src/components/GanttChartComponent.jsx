@@ -15,8 +15,10 @@ const generateColor = (index) => {
     '#00FF7F', '#FFDAB9', '#FF6347', '#D2B48C', '#ADFF2F',
   ];
   return colors[index % colors.length];
+
 };
 
+//gantchart component
 const GanttChart = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
