@@ -9,6 +9,10 @@ const AddQuantity = () => {
   const [selectedComponent, setSelectedComponent] = useState('');
   const [fetchedQuantities, setFetchedQuantities] = useState([]);
   const [dueDate, setDueDate] = useState('');
+  const [viewData, setViewData] = useState([]); // New state for view data
+  const [showTable, setShowTable] = useState(false); // New state to toggle table visibility
+  const [dueDateData, setDueDateData] = useState([]); // New state for due date data
+  const [showDueDateTable, setShowDueDateTable] = useState(false); // New state to toggle due date table visibility
 
   useEffect(() => {
     fetchComponents();
@@ -19,7 +23,6 @@ const AddQuantity = () => {
       const response = await axios.get('http://172.18.101.47:4567/fetch_operations/');
       const data = response.data;
 
-      // Extract component names and remove duplicates using Set
       const componentList = [...new Set(data.map(item => item.component))];
       setComponents(componentList);
       setFetchedQuantities(data);
@@ -27,6 +30,44 @@ const AddQuantity = () => {
       console.error('Error fetching components:', error);
     }
   };
+
+  const fetchComponentQuantities = async () => {
+    if (!selectedComponent) {
+      toast.error('Please select a component to view its quantities.');
+      return;
+    }
+    try {
+      const response = await axios.get('http://172.18.101.47:4567/fetch_component_quantities/');
+      if (typeof response.data === 'object') {
+        const filteredData = Object.entries(response.data)
+          .filter(([component]) => component === selectedComponent)
+          .map(([component, quantity]) => ({ component, quantity }));
+        setViewData(filteredData);
+      } else {
+        toast.error('Unexpected data format received.');
+      }
+      setShowTable(true);
+    } catch (error) {
+      console.error('Error fetching component quantities:', error);
+    }
+  };
+
+  // New function to fetch due dates
+ // New function to fetch due dates
+const fetchDueDates = async () => {
+  if (!selectedComponent) {
+    toast.error('Please select a component to view its due dates.');
+    return;
+  }
+  try {
+    const response = await axios.get('http://172.18.101.47:4567/lead-time-table');
+    const filteredData = response.data.filter(item => item.component === selectedComponent);
+    setDueDateData(filteredData);
+    setShowDueDateTable(true); // Show the due date table after fetching data
+  } catch (error) {
+    console.error('Error fetching due dates:', error);
+  }
+};
 
   const handleComponentChange = (e) => {
     setSelectedComponent(e.target.value);
@@ -55,7 +96,7 @@ const AddQuantity = () => {
       ]);
       toast.success('Quantity added successfully!');
       setQuantity(0);
-      fetchComponents();  // Refresh the list of components
+      fetchComponents();
     } catch (error) {
       console.error('Error adding quantity:', error);
       toast.error('Failed to add quantity.');
@@ -87,10 +128,8 @@ const AddQuantity = () => {
     <div className="container mx-auto p-4">
       <ToastContainer />
 
-      {/* Flex Container for Aligning Cards Side by Side */}
       <div className="flex flex-wrap gap-4">
         
-        {/* Add Quantity Card */}
         <div className="flex-1 bg-white shadow-md rounded-lg p-6 border border-gray-200">
           <h1 className="text-2xl font-bold mb-4">Add Quantity</h1>
           <div className="space-y-4">
@@ -124,10 +163,17 @@ const AddQuantity = () => {
             >
               Add Quantity
             </button>
+
+            {/* New View Button for Component Quantities */}
+            <button
+              onClick={fetchComponentQuantities}
+              className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+            >
+              View Quantities
+            </button>
           </div>
         </div>
 
-        {/* Add Due Date Card */}
         <div className="flex-1 bg-white shadow-md rounded-lg p-6 border border-gray-200">
           <h1 className="text-2xl font-bold mb-4">Add Due Date</h1>
           <div className="space-y-4">
@@ -148,7 +194,7 @@ const AddQuantity = () => {
             <div>
               <label className="block mb-2 font-bold">Due Date:</label>
               <input
-                type="datetime-local"  // Allows setting both date and time
+                type="datetime-local"
                 value={dueDate}
                 onChange={handleDueDateChange}
                 className="w-full p-2 border rounded"
@@ -161,8 +207,63 @@ const AddQuantity = () => {
             >
               Submit
             </button>
+
+            {/* New View Button for Due Dates */}
+            <button
+              onClick={fetchDueDates}
+              className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+            >
+              View Due Dates
+            </button>
           </div>
         </div>
+      </div>
+
+     {/* Conditional Rendering of the Component Quantities and Due Dates Tables */}
+     <div className="flex space-x-4 mt-4">
+        {showTable && (
+          <div className="flex-1 bg-white shadow-md rounded-lg p-6 border border-gray-200">
+            <h2 className="text-xl font-bold mb-4">Component Quantities</h2>
+            <table className="min-w-full border-collapse border border-gray-200">
+              <thead>
+                <tr>
+                  <th className="border border-gray-300 p-2">Component</th>
+                  <th className="border border-gray-300 p-2">Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {viewData.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-100 cursor-pointer">
+                    <td className="border border-gray-300 p-2">{item.component}</td>
+                    <td className="border border-gray-300 p-2">{item.quantity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+{showDueDateTable && (
+          <div className="flex-1 bg-white shadow-md rounded-lg p-6 border border-gray-200">
+            <h2 className="text-xl font-bold mb-4">Due Dates</h2>
+            <table className="min-w-full border-collapse border border-gray-200">
+              <thead>
+                <tr>
+                  <th className="border border-gray-300 p-2">Component</th>
+                  <th className="border border-gray-300 p-2">Due Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dueDateData.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-100 cursor-pointer">
+                    <td className="border border-gray-300 p-2">{item.component}</td>
+                    <td className="border border-gray-300 p-2">{item.due_date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
