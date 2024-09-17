@@ -7,6 +7,7 @@ import * as XLSX from 'xlsx';
 
 // Function to generate colors
 const generateColor = (index) => {
+  
   const colors = [
     '#FF5733', '#33FF57', '#00008b', '#FF33FF', '#FFFF33', 
     '#33FFFF', '#FF8C00', '#8B008B', '#FF6347', '#4682B4', 
@@ -20,6 +21,8 @@ const generateColor = (index) => {
 
 //gantchart component
 const GanttChart = () => {
+
+  const [colorMap, setColorMap] = useState({});
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,6 +34,19 @@ const GanttChart = () => {
   const [types, setTypes] = useState([]);
   const timelineRef = useRef(null);
   const timelineInstance = useRef(null);
+  const [selectedComponent, setSelectedComponent] = useState('All');
+  const [selectedMachine, setSelectedMachine] = useState('All');
+  const [selectedType, setSelectedType] = useState('All');
+  
+  
+
+  const getFilteredTasks = () => {
+    return tasks.filter(task => 
+      (selectedComponent === 'All' || task.component === selectedComponent) &&
+      (selectedMachine === 'All' || task.machine === selectedMachine) &&
+      (selectedType === 'All' || task.type === selectedType)
+    );
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,15 +78,17 @@ const GanttChart = () => {
   useEffect(() => {
     if (tasks.length > 0 && timelineRef.current) {
       const container = timelineRef.current;
+      const filteredTasks = getFilteredTasks();
   
       // Generate a color map based on components
-      const colorMap = {};
+      const newColorMap = {};
       components.forEach((component, index) => {
-        colorMap[component] = generateColor(index);
+        newColorMap[component] = generateColor(index);
       });
+      setColorMap(newColorMap);
   
       const items = new DataSet(
-        tasks.map((task, index) => ({
+        filteredTasks.map((task, index) => ({
           id: index,
           content: task.description,
           start: task.start_time,
@@ -83,8 +101,8 @@ const GanttChart = () => {
           <strong>Quantity:</strong> ${task.quantity}<br>
           <strong>Start:</strong> ${moment(task.start_time).format('YYYY-MM-DD HH:mm:ss')}<br>
           <strong>End:</strong> ${moment(task.end_time).format('YYYY-MM-DD HH:mm:ss')}`,
-  style: `background-color: ${colorMap[task.component] || '#ccc'};`
-}))
+          style: `background-color: ${newColorMap[task.component] || '#ccc'};`
+        }))
 );
   
       const groups = new DataSet(
@@ -140,7 +158,7 @@ const GanttChart = () => {
         timelineInstance.current.setWindow(currentStart.toDate(), currentEnd.toDate());
       }
     }
-  }, [tasks, viewMode, components, currentStart, currentEnd]);
+  }, [tasks, viewMode, components, currentStart, currentEnd, selectedComponent, selectedMachine, selectedType]);
 
   const handleNext = () => {
     if (currentStart && currentEnd) {
@@ -223,8 +241,10 @@ const handleGenerate = async () => {
   if (loading) return <div className="text-center">Loading...</div>;
   if (error) return <div className="text-center text-red-500">{error}</div>;
 
+
+
   return (
-    <div>
+    <div >
       <div className="flex justify-between items-center mb-4">
         <div>
           <button className="px-4 py-2 bg-gray-300" onClick={handlePrevious}>
@@ -249,7 +269,51 @@ const handleGenerate = async () => {
       Generate
     </button>
       </div>
+      <select
+        value={selectedComponent}
+        onChange={(e) => setSelectedComponent(e.target.value)}
+        className="px-4 py-2 bg-gray-100 ml-2"
+      >
+        <option value="All">All Components</option>
+        {components.map(component => (
+          <option key={component} value={component} style={{ backgroundColor: colorMap[component] }}>
+            <span style={{ display: 'inline-block', width: '15px', height: '15px', marginRight: '10px' }}></span>
+            {component}
+           
+          </option>
+        ))}
+      </select>
+
+      
+        
+      <select
+        value={selectedMachine}
+        onChange={(e) => setSelectedMachine(e.target.value)}
+        className="px-4 py-2 bg-gray-100 ml-2"
+      >
+        <option value="All">All Machines</option>
+        {machines.map(machine => (
+          <option key={machine} value={machine} style={{ backgroundColor: colorMap[machine] }}>
+            {machine}
+          </option>
+        ))}
+      </select>
+        <select
+          value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value)}
+          className="px-4 py-2 bg-gray-100 ml-2"
+        >
+          <option value="All">All Types</option>
+          {types.map(type => (
+            <option key={type} value={type}>{type}</option>
+          ))}
+        </select>
+        
+     
+
+        
       <div ref={timelineRef} style={{ height: '600px' }}></div>
+    
     </div>
   );
 };
