@@ -7,7 +7,6 @@ import * as XLSX from 'xlsx';
 
 // Function to generate colors
 const generateColor = (index) => {
-  
   const colors = [
     '#FF5733', '#33FF57', '#00008b', '#FF33FF', '#FFFF33', 
     '#33FFFF', '#FF8C00', '#8B008B', '#FF6347', '#4682B4', 
@@ -16,17 +15,15 @@ const generateColor = (index) => {
     '#00FF7F', '#FFDAB9', '#FF6347', '#D2B48C', '#ADFF2F',
   ];
   return colors[index % colors.length];
-
 };
 
-//gantchart component
+// gantchart component
 const GanttChart = () => {
-
   const [colorMap, setColorMap] = useState({});
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('day');
+  const [viewMode, setViewMode] = useState('day'); // Default to 'day'
   const [currentStart, setCurrentStart] = useState(null);
   const [currentEnd, setCurrentEnd] = useState(null);
   const [components, setComponents] = useState([]);
@@ -37,8 +34,6 @@ const GanttChart = () => {
   const [selectedComponent, setSelectedComponent] = useState('All');
   const [selectedMachine, setSelectedMachine] = useState('All');
   const [selectedType, setSelectedType] = useState('All');
-  
-  
 
   const getFilteredTasks = () => {
     return tasks.filter(task => 
@@ -51,9 +46,7 @@ const GanttChart = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        //const response = await axios.get('http://192.168.10.21:4567/schedule/');
         const response = await axios.get('http://172.18.101.47:4567/schedule/');
-        //192.168.137.221
         setTasks(response.data);
 
         const optionsResponse = await axios.get('http://172.18.101.47:4567/fetch_operations/');
@@ -79,14 +72,14 @@ const GanttChart = () => {
     if (tasks.length > 0 && timelineRef.current) {
       const container = timelineRef.current;
       const filteredTasks = getFilteredTasks();
-  
+
       // Generate a color map based on components
       const newColorMap = {};
       components.forEach((component, index) => {
         newColorMap[component] = generateColor(index);
       });
       setColorMap(newColorMap);
-  
+
       const items = new DataSet(
         filteredTasks.map((task, index) => ({
           id: index,
@@ -103,15 +96,15 @@ const GanttChart = () => {
           <strong>End:</strong> ${moment(task.end_time).format('YYYY-MM-DD HH:mm:ss')}`,
           style: `background-color: ${newColorMap[task.component] || '#ccc'};`
         }))
-);
-  
+      );
+
       const groups = new DataSet(
         [...new Set(tasks.map(task => task.machine))].map(machine => ({
           id: machine,
           content: machine
         }))
       );
-  
+
       const options = {
         start: currentStart ? currentStart.toDate() : moment(tasks[0].start_time).toDate(),
         end: currentEnd ? currentEnd.toDate() : moment(tasks[0].end_time).toDate(),
@@ -144,7 +137,7 @@ const GanttChart = () => {
           { start: `${moment().startOf('day').format('YYYY-MM-DD')}T17:00:00`, end: `${moment().startOf('day').format('YYYY-MM-DD')}T24:00:00`, repeat: 'daily' }
         ]
       };
-  
+
       if (!timelineInstance.current) {
         timelineInstance.current = new Timeline(container, items, groups, options);
       } else {
@@ -152,7 +145,7 @@ const GanttChart = () => {
         timelineInstance.current.setItems(items);
         timelineInstance.current.setGroups(groups);
       }
-  
+
       // Set the window explicitly
       if (currentStart && currentEnd) {
         timelineInstance.current.setWindow(currentStart.toDate(), currentEnd.toDate());
@@ -177,7 +170,7 @@ const GanttChart = () => {
       }
     }
   };
-  
+
   const handlePrevious = () => {
     if (currentStart && currentEnd) {
       let newStart, newEnd;
@@ -197,54 +190,50 @@ const GanttChart = () => {
   };
 
   // Add this effect to handle view mode changes
-useEffect(() => {
-  if (tasks.length > 0) {
-    const minDate = moment.min(tasks.map(task => moment(task.start_time)));
-    let viewStart, viewEnd;
-    if (viewMode === 'day') {
-      viewStart = minDate.clone().startOf('day').hour(9);
-      viewEnd = minDate.clone().endOf('day').hour(17);
-    } else if (viewMode === 'week') {
-      viewStart = minDate.clone().startOf('week').hour(9);
-      viewEnd = minDate.clone().endOf('week').hour(17);
+  useEffect(() => {
+    if (tasks.length > 0) {
+      const minDate = moment.min(tasks.map(task => moment(task.start_time)));
+      let viewStart, viewEnd;
+      if (viewMode === 'day') {
+        viewStart = minDate.clone().startOf('day').hour(9);
+        viewEnd = minDate.clone().endOf('day').hour(17);
+      } else if (viewMode === 'week') {
+        viewStart = minDate.clone().startOf('week').hour(9);
+        viewEnd = minDate.clone().endOf('week').hour(17);
+      }
+      setCurrentStart(viewStart);
+      setCurrentEnd(viewEnd);
+      if (timelineInstance.current) {
+        timelineInstance.current.setWindow(viewStart.toDate(), viewEnd.toDate());
+      }
     }
-    setCurrentStart(viewStart);
-    setCurrentEnd(viewEnd);
-    if (timelineInstance.current) {
-      timelineInstance.current.setWindow(viewStart.toDate(), viewEnd.toDate());
-    }
-  }
-}, [viewMode, tasks]);
- 
-// Function to generate Excel file from data
-const handleGenerate = async () => {
-  try {
-    // Fetch data from backend
-    const response = await axios.get('http://172.18.101.47:4567/schedule/');
-    const data = response.data;
+  }, [viewMode, tasks]);
 
-    if (data && Array.isArray(data) && data.length > 0) {
-      // Convert JSON data to Excel sheet
-      const ws = XLSX.utils.json_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Gantt Data');
-      XLSX.writeFile(wb, 'gantt_data.xlsx');
-    } else {
-      alert('No data found to export.');
+  // Function to generate Excel file from data
+  const handleGenerate = async () => {
+    try {
+      const response = await axios.get('http://172.18.101.47:4567/schedule/');
+      const data = response.data;
+
+      if (data && Array.isArray(data) && data.length > 0) {
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Gantt Data');
+        XLSX.writeFile(wb, 'gantt_data.xlsx');
+      } else {
+        alert('No data found to export.');
+      }
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      alert('There was an issue exporting the data. Please try again.');
     }
-  } catch (error) {
-    console.error('Error exporting data:', error);
-    alert('There was an issue exporting the data. Please try again.');
-  }
-};
+  };
 
   if (loading) return <div className="text-center">Loading...</div>;
   if (error) return <div className="text-center text-red-500">{error}</div>;
 
-
-
   return (
-    <div >
+    <div>
       <div className="flex justify-between items-center mb-4">
         <div>
           <button className="px-4 py-2 bg-gray-300" onClick={handlePrevious}>
@@ -263,11 +252,11 @@ const handleGenerate = async () => {
           <option value="week">Week View</option>
         </select>
         <button 
-      onClick={handleGenerate} 
-      className="px-4 py-2 bg-blue-500 text-white ml-2 rounded-lg"
-    >
-      Generate
-    </button>
+          onClick={handleGenerate} 
+          className="px-4 py-2 bg-blue-500 text-white ml-2 rounded-lg"
+        >
+          Generate
+        </button>
       </div>
       <select
         value={selectedComponent}
@@ -279,13 +268,10 @@ const handleGenerate = async () => {
           <option key={component} value={component} style={{ backgroundColor: colorMap[component] }}>
             <span style={{ display: 'inline-block', width: '15px', height: '15px', marginRight: '10px' }}></span>
             {component}
-           
           </option>
         ))}
       </select>
 
-      
-        
       <select
         value={selectedMachine}
         onChange={(e) => setSelectedMachine(e.target.value)}
@@ -298,22 +284,18 @@ const handleGenerate = async () => {
           </option>
         ))}
       </select>
-        <select
-          value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
-          className="px-4 py-2 bg-gray-100 ml-2"
-        >
-          <option value="All">All Types</option>
-          {types.map(type => (
-            <option key={type} value={type}>{type}</option>
-          ))}
-        </select>
-        
-     
+      <select
+        value={selectedType}
+        onChange={(e) => setSelectedType(e.target.value)}
+        className="px-4 py-2 bg-gray-100 ml-2"
+      >
+        <option value="All">All Types</option>
+        {types.map(type => (
+          <option key={type} value={type}>{type}</option>
+        ))}
+      </select>
 
-        
       <div ref={timelineRef} style={{ height: '600px' }}></div>
-    
     </div>
   );
 };

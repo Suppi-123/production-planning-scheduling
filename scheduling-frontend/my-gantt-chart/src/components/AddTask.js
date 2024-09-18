@@ -75,29 +75,18 @@ const AddTaskPage = () => {
     };
 
     try {
-      await axios.post('http://172.18.101.47:4567/post_operations/', {
+      const response = await axios.post('http://172.18.101.47:4567/post_operations/', {
         operations: [operationToSubmit],
       });
-      toast.success('Operation added successfully!'); // Added toast message
-      toast.info('Add quantity and lead time for component to schedule.'); // New toast message
-      setNewOperation({
-        component: '',
-        description: '',
-        type: '',
-        machine: '',
-        time: 0,
-      });
-      setCustomFields({
-        component: '',
-        type: '',
-        machine: '',
-      });
-      setShowCustomInput({
-        component: false,
-        type: false,
-        machine: false,
-      });
-      fetchOperations();
+
+      // Check if the operation already exists
+      if (response.data[0]?.message === "Operation already exists") {
+        toast.error('Operation already exists'); // Show error toast
+      } else {
+        toast.success('Operation added successfully!'); // Added toast message
+        toast.info('Add quantity and lead time for component to schedule.'); // New toast message
+        // ... reset state and fetch operations
+      }
     } catch (error) {
       console.error('Error adding operation:', error);
       toast.info('Failed to add operation.');
