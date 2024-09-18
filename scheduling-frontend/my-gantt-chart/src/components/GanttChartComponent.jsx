@@ -297,6 +297,7 @@ const GanttChart = () => {
 
       <div ref={timelineRef} style={{ height: '600px' }}></div>
     </div>
+    
   );
 };
 
