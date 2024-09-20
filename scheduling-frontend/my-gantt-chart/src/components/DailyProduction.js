@@ -22,7 +22,7 @@ const DailyProduction = () => {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    fetch('http://172.18.101.47:4567/daily_production/')
+    fetch('http://172.18.7.85:4567/daily_production/')
       .then((response) => response.json())
       .then((data) => {
         setData(data);
