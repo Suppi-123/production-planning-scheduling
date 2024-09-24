@@ -17,13 +17,12 @@ const generateColor = (index) => {
   return colors[index % colors.length];
 };
 
-// gantchart component
 const GanttChart = () => {
   const [colorMap, setColorMap] = useState({});
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('day'); // Default to 'day'
+  const [viewMode, setViewMode] = useState('day');
   const [currentStart, setCurrentStart] = useState(null);
   const [currentEnd, setCurrentEnd] = useState(null);
   const [components, setComponents] = useState([]);
@@ -34,22 +33,25 @@ const GanttChart = () => {
   const [selectedComponent, setSelectedComponent] = useState('All');
   const [selectedMachine, setSelectedMachine] = useState('All');
   const [selectedType, setSelectedType] = useState('All');
-
-  const getFilteredTasks = () => {
-    return tasks.filter(task => 
-      (selectedComponent === 'All' || task.component === selectedComponent) &&
-      (selectedMachine === 'All' || task.machine === selectedMachine) &&
-      (selectedType === 'All' || task.type === selectedType)
-    );
-  };
+  const [statusData, setStatusData] = useState({
+    early_complete: [],
+    on_time_complete: [],
+    delayed_complete: []
+  });
+  const [selectedStatus, setSelectedStatus] = useState('All');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://172.18.101.47:4567/schedule/');
-        setTasks(response.data);
+        const [scheduleResponse, optionsResponse, statusResponse] = await Promise.all([
+          axios.get('http://172.18.7.85:4567/schedule/'),
+          axios.get('http://172.18.7.85:4567/fetch_operations/'),
+          axios.get('http://172.18.7.85:4567/component_status/')
+        ]);
 
-        const optionsResponse = await axios.get('http://172.18.101.47:4567/fetch_operations/');
+        setTasks(scheduleResponse.data);
+        setStatusData(statusResponse.data);
+
         const uniqueComponents = [...new Set(optionsResponse.data.map(item => item.component))];
         const uniqueMachines = [...new Set(optionsResponse.data.map(item => item.machine))];
         const uniqueTypes = [...new Set(optionsResponse.data.map(item => item.type))];
@@ -67,6 +69,21 @@ const GanttChart = () => {
     };
     fetchData();
   }, []);
+
+  const getFilteredTasks = () => {
+    let filteredTasks = tasks.filter(task => 
+      (selectedComponent === 'All' || task.component === selectedComponent) &&
+      (selectedMachine === 'All' || task.machine === selectedMachine) &&
+      (selectedType === 'All' || task.type === selectedType)
+    );
+
+    if (selectedStatus !== 'All') {
+      const statusComponents = statusData[selectedStatus].map(item => item.component);
+      filteredTasks = filteredTasks.filter(task => statusComponents.includes(task.component));
+    }
+
+    return filteredTasks;
+  };
 
   useEffect(() => {
     if (tasks.length > 0 && timelineRef.current) {
@@ -151,7 +168,7 @@ const GanttChart = () => {
         timelineInstance.current.setWindow(currentStart.toDate(), currentEnd.toDate());
       }
     }
-  }, [tasks, viewMode, components, currentStart, currentEnd, selectedComponent, selectedMachine, selectedType]);
+  }, [tasks, viewMode, components, currentStart, currentEnd, selectedComponent, selectedMachine, selectedType, selectedStatus]);
 
   const handleNext = () => {
     if (currentStart && currentEnd) {
@@ -189,7 +206,6 @@ const GanttChart = () => {
     }
   };
 
-  // Add this effect to handle view mode changes
   useEffect(() => {
     if (tasks.length > 0) {
       const minDate = moment.min(tasks.map(task => moment(task.start_time)));
@@ -209,10 +225,9 @@ const GanttChart = () => {
     }
   }, [viewMode, tasks]);
 
-  // Function to generate Excel file from data
   const handleGenerate = async () => {
     try {
-      const response = await axios.get('http://172.18.101.47:4567/schedule/');
+      const response = await axios.get('http://172.18.7.85:4567/schedule/');
       const data = response.data;
 
       if (data && Array.isArray(data) && data.length > 0) {
@@ -227,6 +242,11 @@ const GanttChart = () => {
       console.error('Error exporting data:', error);
       alert('There was an issue exporting the data. Please try again.');
     }
+  };
+
+  const handleStatusChange = (e) => {
+    setSelectedStatus(e.target.value);
+    setSelectedComponent('All'); // Reset component selection when changing status
   };
 
   if (loading) return <div className="text-center">Loading...</div>;
@@ -259,19 +279,34 @@ const GanttChart = () => {
         </button>
       </div>
       <select
+        value={selectedStatus}
+        onChange={handleStatusChange}
+        className="px-4 py-2 bg-gray-100 ml-2"
+      >
+        <option value="All">All Status</option>
+        <option value="early_complete">Early Complete</option>
+        <option value="on_time_complete">On Time Complete</option>
+        <option value="delayed_complete">Delayed Complete</option>
+      </select>
+      <select
         value={selectedComponent}
         onChange={(e) => setSelectedComponent(e.target.value)}
         className="px-4 py-2 bg-gray-100 ml-2"
       >
         <option value="All">All Components</option>
-        {components.map(component => (
-          <option key={component} value={component} style={{ backgroundColor: colorMap[component] }}>
-            <span style={{ display: 'inline-block', width: '15px', height: '15px', marginRight: '10px' }}></span>
-            {component}
-          </option>
-        ))}
+        {selectedStatus === 'All'
+          ? components.map(component => (
+              <option key={component} value={component} style={{ backgroundColor: colorMap[component] }}>
+                {component}
+              </option>
+            ))
+          : statusData[selectedStatus].map(item => (
+              <option key={item.component} value={item.component} style={{ backgroundColor: colorMap[item.component] }}>
+                {item.component}
+              </option>
+            ))
+        }
       </select>
-
       <select
         value={selectedMachine}
         onChange={(e) => setSelectedMachine(e.target.value)}
@@ -297,7 +332,6 @@ const GanttChart = () => {
 
       <div ref={timelineRef} style={{ height: '600px' }}></div>
     </div>
-    
   );
 };
 

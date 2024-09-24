@@ -119,6 +119,9 @@ const DailyProduction = () => {
       })
     );
 
+    // Sort allRows by date
+    allRows.sort((a, b) => new Date(a.date) - new Date(b.date));
+
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return allRows.slice(startIndex, endIndex);
@@ -158,20 +161,20 @@ const DailyProduction = () => {
       </div>
       {renderBarChart()}
       <h3 className="text-xl font-semibold mt-6">Daily Production Details</h3>
-      <table className="mt-6 w-full border border-gray-300">
+      <table className="mt-6 w-full border-collapse border border-gray-500 table-auto">
         <thead>
           <tr className="bg-gray-100">
-            <th className="p-2 border-b">Component</th>
-            <th className="p-2 border-b">Date</th>
-            <th className="p-2 border-b">Quantity</th>
+            <th className="p-2 border border-gray-500">Component</th>
+            <th className="p-2 border border-gray-500">Date</th>
+            <th className="p-2 border border-gray-500">Quantity</th>
           </tr>
         </thead>
         <tbody>
           {getPaginatedData().map(({ component, date, quantity }) => (
-            <tr key={`${component}-${date}`}>
-              <td className="p-2 border-b">{component}</td>
-              <td className="p-2 border-b">{date}</td>
-              <td className="p-2 border-b">{quantity}</td>
+            <tr key={`${component}-${date}`} className="border border-gray-500">
+              <td className="p-2 border border-gray-500">{component}</td>
+              <td className="p-2 border border-gray-500">{date}</td>
+              <td className="p-2 border border-gray-500">{quantity}</td>
             </tr>
           ))}
         </tbody>
