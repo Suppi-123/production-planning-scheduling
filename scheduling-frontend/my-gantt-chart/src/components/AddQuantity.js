@@ -20,7 +20,7 @@ const AddQuantity = () => {
 
   const fetchComponents = async () => {
     try {
-      const response = await axios.get('http://172.18.7.85:4567/fetch_operations/');
+      const response = await axios.get('http://172.18.7.85:4568/fetch_operations/');
       const data = response.data;
 
       const componentList = [...new Set(data.map(item => item.component))];
@@ -37,7 +37,7 @@ const AddQuantity = () => {
       return;
     }
     try {
-      const response = await axios.get('http://172.18.7.85:4567/fetch_component_quantities/');
+      const response = await axios.get('http://172.18.7.85:4568/fetch_component_quantities/');
       if (typeof response.data === 'object') {
         const filteredData = Object.entries(response.data)
           .filter(([component]) => component === selectedComponent)
@@ -60,7 +60,7 @@ const fetchDueDates = async () => {
     return;
   }
   try {
-    const response = await axios.get('http://172.18.7.85:4567/lead-time-table');
+    const response = await axios.get('http://172.18.7.85:4568/lead-time-table');
     const filteredData = response.data.filter(item => item.component === selectedComponent);
     setDueDateData(filteredData);
     setShowDueDateTable(true); // Show the due date table after fetching data
@@ -88,7 +88,7 @@ const fetchDueDates = async () => {
     }
 
     try {
-      await axios.post('http://172.18.7.85:4567/insert_component_quantities/', [
+      await axios.post('http://172.18.7.85:4568/insert_component_quantities/', [
         {
           component: selectedComponent,
           quantity: parseInt(quantity, 10),
@@ -110,7 +110,7 @@ const fetchDueDates = async () => {
     }
 
     try {
-      await axios.post('http://172.18.7.85:4567/insert_lead_times/', [
+      await axios.post('http://172.18.7.85:4568/insert_lead_times/', [
         {
           component: selectedComponent,
           due_date: dueDate,

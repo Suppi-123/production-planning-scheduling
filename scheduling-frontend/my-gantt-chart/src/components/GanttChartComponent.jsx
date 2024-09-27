@@ -44,9 +44,9 @@ const GanttChart = () => {
     const fetchData = async () => {
       try {
         const [scheduleResponse, optionsResponse, statusResponse] = await Promise.all([
-          axios.get('http://172.18.7.85:4567/schedule/'),
-          axios.get('http://172.18.7.85:4567/fetch_operations/'),
-          axios.get('http://172.18.7.85:4567/component_status/')
+          axios.get('http://172.18.7.85:1112/schedule/'),
+          axios.get('http://172.18.7.85:1112/fetch_operations/'),
+          axios.get('http://172.18.7.85:1112/component_status/')
         ]);
 
         setTasks(scheduleResponse.data);
@@ -111,8 +111,8 @@ const GanttChart = () => {
           <strong>Quantity:</strong> ${task.quantity}<br>
           <strong>Start:</strong> ${moment(task.start_time).format('YYYY-MM-DD HH:mm:ss')}<br>
           <strong>End:</strong> ${moment(task.end_time).format('YYYY-MM-DD HH:mm:ss')}`,
-          style: `background-color: ${newColorMap[task.component] || '#ccc'};`
-        }))
+          style: `background-color: ${newColorMap[task.component] || '#ccc'}; border: none;`
+  }))
       );
 
       const groups = new DataSet(
@@ -227,7 +227,7 @@ const GanttChart = () => {
 
   const handleGenerate = async () => {
     try {
-      const response = await axios.get('http://172.18.7.85:4567/schedule/');
+      const response = await axios.get('http://172.18.7.85:1112/schedule/');
       const data = response.data;
 
       if (data && Array.isArray(data) && data.length > 0) {
