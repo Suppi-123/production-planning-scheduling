@@ -33,7 +33,7 @@ const AddTaskPage = () => {
 
   const fetchOperations = async () => {
     try {
-      const response = await axios.get('http://172.18.7.85:4568/fetch_operations/');
+      const response = await axios.get('http://172.18.7.85:5609/fetch_operations/');
       setOperations(response.data);
       setComponents([...new Set(response.data.map(op => op.component)), 'Other']);
       setTypes([...new Set(response.data.map(op => op.type)), 'Other']);
@@ -75,7 +75,7 @@ const AddTaskPage = () => {
     };
 
     try {
-      const response = await axios.post('http://172.18.7.85:4568/post_operations/', {
+      const response = await axios.post('http://172.18.7.85:5609/post_operations/', {
         operations: [operationToSubmit],
       });
 

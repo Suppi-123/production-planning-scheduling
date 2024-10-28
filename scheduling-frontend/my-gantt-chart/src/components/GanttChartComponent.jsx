@@ -39,14 +39,85 @@ const GanttChart = () => {
     delayed_complete: []
   });
   const [selectedStatus, setSelectedStatus] = useState('All');
+  const [machineStatuses, setMachineStatuses] = useState([]);
+  const [rawMaterials, setRawMaterials] = useState([]);
+
+  const CustomSelect = ({ options, placeholder, className, type = 'machine' }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    
+    const getStatusColor = (isActive, type) => {
+      if (type === 'machine') {
+        return isActive ? '#22c55e' : '#ef4444'; // Green : Red for machines
+      } else if (type === 'material') {
+        return isActive ? '#22c55e' : '#808080'; // Green : Grey for materials
+      }
+    };
+  
+    return (
+      <div className="relative inline-block">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`${className} flex items-center justify-between min-w-[200px]`}
+        >
+          {placeholder}
+          <span className="ml-2">▼</span>
+        </button>
+        {isOpen && (
+          <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+            {options.map((option, index) => (
+              <div
+                key={index}
+                className="px-4 py-2 hover:bg-gray-100 cursor-default flex items-center"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <span 
+                  className="inline-block w-2 h-2 rounded-full mr-2"
+                  style={{ 
+                    backgroundColor: getStatusColor(option.isActive, type)
+                  }}
+                />
+                <span>{option.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  useEffect(() => {
+    const fetchMachineStatuses = async () => {
+      try {
+        const response = await axios.get('http://172.18.7.85:5609/machine_statuses/');
+        setMachineStatuses(response.data);
+      } catch (error) {
+        console.error('Error fetching machine statuses:', error);
+      }
+    };
+
+    const fetchRawMaterials = async () => {
+      try {
+        const response = await axios.get('http://172.18.7.85:5609/raw_materials/');
+        setRawMaterials(response.data);
+      } catch (error) {
+        console.error('Error fetching raw materials:', error);
+      }
+    };
+
+    fetchMachineStatuses();
+    fetchRawMaterials();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [scheduleResponse, optionsResponse, statusResponse] = await Promise.all([
-          axios.get('http://172.18.7.85:1112/schedule/'),
-          axios.get('http://172.18.7.85:1112/fetch_operations/'),
-          axios.get('http://172.18.7.85:1112/component_status/')
+          axios.get('http://172.18.7.85:5609/schedule/'),
+          axios.get('http://172.18.7.85:5609/fetch_operations/'),
+          axios.get('http://172.18.7.85:5609/component_status/')
         ]);
 
         setTasks(scheduleResponse.data);
@@ -227,7 +298,7 @@ const GanttChart = () => {
 
   const handleGenerate = async () => {
     try {
-      const response = await axios.get('http://172.18.7.85:1112/schedule/');
+      const response = await axios.get('http://172.18.7.85:5609/schedule/');
       const data = response.data;
 
       if (data && Array.isArray(data) && data.length > 0) {
@@ -312,7 +383,7 @@ const GanttChart = () => {
         onChange={(e) => setSelectedMachine(e.target.value)}
         className="px-4 py-2 bg-gray-100 ml-2"
       >
-        <option value="All">All Machines</option>
+        <option value="All">AllMachines</option>
         {machines.map(machine => (
           <option key={machine} value={machine} style={{ backgroundColor: colorMap[machine] }}>
             {machine}
@@ -329,6 +400,28 @@ const GanttChart = () => {
           <option key={type} value={type}>{type}</option>
         ))}
       </select>
+
+      <CustomSelect
+  options={machineStatuses.map(status => ({
+    label: `${status.machine} - ${status.status}`,
+    isActive: status.status === 'ON'
+  }))}
+  placeholder="Machine Status"
+  className="px-4 py-2 bg-gray-100 ml-2 rounded"
+  type="machine" // This will use red/green color scheme
+/>
+
+<CustomSelect
+  options={rawMaterials.map(material => ({
+    label: `${material.name} - ${material.available ? 'Available' : 'Not Available'}`,
+    isActive: material.available
+  }))}
+  placeholder="Raw Materials Status"
+  className="px-4 py-2 bg-gray-100 ml-2 rounded"
+  type="material" // This will use grey/green color scheme
+/>
+
+
 
       <div ref={timelineRef} style={{ height: '600px' }}></div>
     </div>

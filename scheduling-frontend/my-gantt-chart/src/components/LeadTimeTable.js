@@ -7,7 +7,7 @@
 //   useEffect(() => {
 //     const fetchData = async () => {
 //       try {
-//         const response = await axios.get('http://172.18.7.85:4568/lead-time-table');
+//         const response = await axios.get('http://172.18.7.85:5609/lead-time-table');
 //         setData(response.data);
 //       } catch (error) {
 //         console.error('Error fetching data:', error);

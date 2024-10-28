@@ -46,10 +46,10 @@ const GanttChart = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://172.18.7.85:4568/schedule/');
+        const response = await axios.get('http://172.18.7.85:5609/schedule/');
         setTasks(response.data);
 
-        const optionsResponse = await axios.get('http://172.18.7.85:4568/fetch_operations/');
+        const optionsResponse = await axios.get('http://172.18.7.85:5609/fetch_operations/');
         const uniqueComponents = [...new Set(optionsResponse.data.map(item => item.component))];
         const uniqueMachines = [...new Set(optionsResponse.data.map(item => item.machine))];
         const uniqueTypes = [...new Set(optionsResponse.data.map(item => item.type))];
@@ -212,7 +212,7 @@ const GanttChart = () => {
   // Function to generate Excel file from data
   const handleGenerate = async () => {
     try {
-      const response = await axios.get('http://172.18.7.85:4568/schedule/');
+      const response = await axios.get('http://172.18.7.85:5609/schedule/');
       const data = response.data;
 
       if (data && Array.isArray(data) && data.length > 0) {
