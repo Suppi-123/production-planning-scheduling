@@ -28,7 +28,7 @@ const TaskForm = () => {
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const response = await axios.get('http://172.18.7.85:5609/operations/');
+        const response = await axios.get('http://172.18.7.85:5601/operations/');
         const uniqueComponents = [...new Set(response.data.map(item => item.component))];
         const uniqueMachines = [...new Set(response.data.map(item => item.machine))];
         const uniqueTypes = [...new Set(response.data.map(item => item.type))];
@@ -69,7 +69,7 @@ const TaskForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://172.18.7.85:5609/operations/', formData);
+      await axios.post('http://172.18.7.85:5601/operations/', formData);
       alert('Task added successfully!');
       setFormData({ description: '', time: '', machine: '', component: '', type: '' });
     } catch (error) {

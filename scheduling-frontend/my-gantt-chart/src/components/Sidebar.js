@@ -61,6 +61,14 @@ const Sidebar = ({ setView }) => {
         >
           Lead Time
         </li>
+        <li
+          onClick={() => handleItemClick('maintenance')} // Add new menu item for Maintenance
+          onMouseEnter={() => setHoveredItem('maintenance')}
+          onMouseLeave={() => setHoveredItem(null)}
+          style={(hoveredItem === 'maintenance' || selectedItem === 'maintenance') ? { ...styles.navItem, ...styles.navItemHover } : styles.navItem}
+        >
+          Maintenance
+        </li>
       </ul>
     </div>
   );

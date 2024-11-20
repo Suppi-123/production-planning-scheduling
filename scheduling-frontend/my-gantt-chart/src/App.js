@@ -1,4 +1,4 @@
-// src/App.js
+// App.js
 import React, { useState } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -6,26 +6,30 @@ import GanttChart from './components/GanttChartComponent';
 import AddTask from './components/AddTask';
 import DailyProduction from './components/DailyProduction';
 import ScheduleDetails from './components/ScheduleDetails';
-import AddQuantity from './components/AddQuantity'; // Import AddQuantity component
-import LeadTime from './components/LeadTime'; // Import LeadTime component
+import AddQuantity from './components/AddQuantity';
+import LeadTime from './components/LeadTime';
+import Maintenance from './components/Maintenance'; // Import Maintenance component
 
 const App = () => {
   const [view, setView] = useState('gantt');
+  const [selectedComponentData, setSelectedComponentData] = useState(null);
 
   const renderContent = () => {
     switch (view) {
       case 'gantt':
         return <GanttChart />;
       case 'addTask':
-        return <AddTask />;
+        return <AddTask setView={setView} setSelectedComponentData={setSelectedComponentData} />;
       case 'scheduleDetails':
         return <ScheduleDetails />;
       case 'dailyProduction':
         return <DailyProduction />;
       case 'addQuantity':
-        return <AddQuantity />;
-      case 'leadTime': // Add case for LeadTime
+        return <AddQuantity selectedComponentData={selectedComponentData} />;
+      case 'leadTime':
         return <LeadTime />;
+        case 'maintenance':
+          return <Maintenance />; 
       default:
         return <GanttChart />;
     }

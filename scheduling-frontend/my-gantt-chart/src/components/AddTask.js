@@ -1,9 +1,10 @@
+// AddTaskPage.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const AddTaskPage = () => {
+const AddTaskPage =  ({ setView, setSelectedComponentData }) => {
   const [operations, setOperations] = useState([]);
   const [filteredOperations, setFilteredOperations] = useState([]);
   const [newOperation, setNewOperation] = useState({
@@ -33,7 +34,7 @@ const AddTaskPage = () => {
 
   const fetchOperations = async () => {
     try {
-      const response = await axios.get('http://172.18.7.85:5609/fetch_operations/');
+      const response = await axios.get('http://172.18.7.85:5601/fetch_operations/');
       setOperations(response.data);
       setComponents([...new Set(response.data.map(op => op.component)), 'Other']);
       setTypes([...new Set(response.data.map(op => op.type)), 'Other']);
@@ -75,23 +76,25 @@ const AddTaskPage = () => {
     };
 
     try {
-      const response = await axios.post('http://172.18.7.85:5609/post_operations/', {
+      const response = await axios.post('http://172.18.7.85:5601/post_operations/', {
         operations: [operationToSubmit],
       });
 
-      // Check if the operation already exists
       if (response.data[0]?.message === "Operation already exists") {
-        toast.error('Operation already exists'); // Show error toast
+        toast.error('Operation already exists');
       } else {
-        toast.success('Operation added successfully!'); // Added toast message
-        toast.info('Add quantity and lead time for component to schedule.'); // New toast message
-        // ... reset state and fetch operations
+        toast.success('Operation added successfully!');
+        toast.info('Add quantity and lead time for component to schedule.');
+        // Set the selected component data before navigating
+        setSelectedComponentData(operationToSubmit.component);
+        setView('addQuantity');
       }
     } catch (error) {
       console.error('Error adding operation:', error);
-      toast.info('Failed to add operation.');
+      toast.error('Failed to add operation.');
     }
   };
+
 
   const handleViewClick = () => {
     const filtered = operations.filter(op => op.component === newOperation.component);

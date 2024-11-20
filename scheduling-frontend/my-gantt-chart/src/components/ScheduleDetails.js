@@ -20,7 +20,7 @@ const ScheduleDetails = () => {
       if (startTime) params.start_time = startTime;
       if (endTime) params.end_time = endTime;
 
-      const response = await axios.get('http://172.18.7.85:5609/machine_schedules/', { params });
+      const response = await axios.get('http://172.18.7.85:5601/machine_schedules/', { params });
       const rawData = response.data.machine_schedules;
       const formattedData = [];
 

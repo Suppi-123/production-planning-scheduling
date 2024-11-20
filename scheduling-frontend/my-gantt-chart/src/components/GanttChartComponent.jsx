@@ -91,7 +91,7 @@ const GanttChart = () => {
   useEffect(() => {
     const fetchMachineStatuses = async () => {
       try {
-        const response = await axios.get('http://172.18.7.85:5609/machine_statuses/');
+        const response = await axios.get('http://172.18.7.85:5601/machine_statuses/');
         setMachineStatuses(response.data);
       } catch (error) {
         console.error('Error fetching machine statuses:', error);
@@ -100,7 +100,7 @@ const GanttChart = () => {
 
     const fetchRawMaterials = async () => {
       try {
-        const response = await axios.get('http://172.18.7.85:5609/raw_materials/');
+        const response = await axios.get('http://172.18.7.85:5601/raw_materials/');
         setRawMaterials(response.data);
       } catch (error) {
         console.error('Error fetching raw materials:', error);
@@ -115,9 +115,9 @@ const GanttChart = () => {
     const fetchData = async () => {
       try {
         const [scheduleResponse, optionsResponse, statusResponse] = await Promise.all([
-          axios.get('http://172.18.7.85:5609/schedule/'),
-          axios.get('http://172.18.7.85:5609/fetch_operations/'),
-          axios.get('http://172.18.7.85:5609/component_status/')
+          axios.get('http://172.18.7.85:5601/schedule/'),
+          axios.get('http://172.18.7.85:5601/fetch_operations/'),
+          axios.get('http://172.18.7.85:5601/component_status/')
         ]);
 
         setTasks(scheduleResponse.data);
@@ -298,7 +298,7 @@ const GanttChart = () => {
 
   const handleGenerate = async () => {
     try {
-      const response = await axios.get('http://172.18.7.85:5609/schedule/');
+      const response = await axios.get('http://172.18.7.85:5601/schedule/');
       const data = response.data;
 
       if (data && Array.isArray(data) && data.length > 0) {
